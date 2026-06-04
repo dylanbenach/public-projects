@@ -1,0 +1,9 @@
+data/*.json
+!data/.gitkeep
+!data/README.md
+reports/
+__pycache__/
+*.pyc
+.env
+*.egg-info/
+.venv/

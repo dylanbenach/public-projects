@@ -1,0 +1,26 @@
+{
+  "_comment": "Personal and household profile. Copy this to data/profile.json and fill in your values.",
+  "name": "First Last",
+  "age": 35,
+  "spouse_name": "Spouse Name",
+  "spouse_age": 33,
+  "state": "CA",
+  "filing_status": "married_filing_jointly",
+  "federal_tax_bracket": 0.22,
+  "state_tax_rate": 0.093,
+  "gross_income": 150000,
+  "spouse_gross_income": 80000,
+  "household_gross_income": 230000,
+  "monthly_take_home": 12000,
+  "monthly_expenses": 8000,
+  "emergency_fund_target": 48000,
+  "emergency_fund_months_target": 6,
+  "target_retirement_age": 65,
+  "desired_monthly_retirement_income": 10000,
+  "risk_tolerance": "moderate",
+  "action_items": [
+    "Review emergency fund target and top up if needed",
+    "Confirm 401k contribution elections for the year",
+    "Schedule annual financial review"
+  ]
+}

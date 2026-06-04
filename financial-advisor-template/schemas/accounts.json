@@ -1,0 +1,39 @@
+{
+  "_comment": "Liquid accounts (checking, savings, money market). Copy to data/accounts.json.",
+  "checking": [
+    {
+      "institution": "Bank Name",
+      "nickname": "Main Checking",
+      "balance": 0
+    }
+  ],
+  "savings": [
+    {
+      "institution": "Bank Name",
+      "nickname": "HYSA",
+      "balance": 0,
+      "apy": 0.045
+    }
+  ],
+  "money_market": [],
+  "credit_cards": [
+    {
+      "institution": "Bank of America",
+      "name": "Visa Signature",
+      "nickname": "BofA Visa ...0330",
+      "balance": 0.00,
+      "credit_limit": 54000,
+      "account_last4": "0330"
+    }
+  ],
+  "loans": [
+    {
+      "nickname": "Car Loan",
+      "lender": "Lender Name",
+      "current_balance": 0.00,
+      "interest_rate": 0.05,
+      "monthly_payment": 0.00,
+      "type": "auto"
+    }
+  ]
+}

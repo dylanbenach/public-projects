@@ -1,0 +1,39 @@
+{
+  "_comment": "Retirement accounts (401k, IRA, Roth IRA). Copy to data/retirement.json.",
+  "accounts": [
+    {
+      "type": "401k",
+      "owner": "self",
+      "institution": "Fidelity",
+      "balance": 0,
+      "annual_employee_contribution": 0,
+      "annual_employer_match": 0,
+      "employer_match_pct": 0.04,
+      "employer_match_cap_pct": 0.04,
+      "vesting_schedule": "immediate",
+      "expected_annual_return": 0.07,
+      "allocation_notes": "Target date 2055 fund"
+    },
+    {
+      "type": "roth_ira",
+      "owner": "self",
+      "institution": "Vanguard",
+      "balance": 0,
+      "annual_contribution": 0,
+      "expected_annual_return": 0.07,
+      "allocation_notes": "VTI + VXUS"
+    },
+    {
+      "type": "roth_ira",
+      "owner": "spouse",
+      "institution": "Vanguard",
+      "balance": 0,
+      "annual_contribution": 0,
+      "expected_annual_return": 0.07,
+      "allocation_notes": ""
+    }
+  ],
+  "social_security_estimate_self": 0,
+  "social_security_estimate_spouse": 0,
+  "desired_monthly_retirement_income": 0
+}

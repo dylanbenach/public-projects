@@ -1,0 +1,32 @@
+{
+  "_comment": "Real estate properties and mortgages. Copy to data/real_estate.json.",
+  "properties": [
+    {
+      "nickname": "Primary Home",
+      "address": "123 Main St, City, State ZIP",
+      "type": "primary_residence",
+      "current_estimated_value": 0,
+      "purchase_price": 0,
+      "purchase_date": "2020-01-01",
+      "mortgage": {
+        "lender": "Lender Name",
+        "original_balance": 0,
+        "current_balance": 0,
+        "interest_rate": 0.065,
+        "monthly_payment": 0,
+        "term_years": 30,
+        "start_date": "2020-01-01",
+        "type": "fixed"
+      },
+      "monthly_hoa": 0,
+      "annual_property_tax": 0,
+      "annual_insurance": 0,
+      "monthly_rental_income": 0
+    }
+  ],
+  "considering_purchase": {
+    "target_price_range": [400000, 600000],
+    "down_payment_available": 0,
+    "timeline_months": 24
+  }
+}

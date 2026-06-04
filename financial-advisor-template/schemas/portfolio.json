@@ -1,0 +1,39 @@
+{
+  "_comment": "Taxable brokerage accounts and investment plans. Copy to data/portfolio.json.",
+  "accounts": [
+    {
+      "institution": "Schwab",
+      "account_type": "taxable_brokerage",
+      "total_value": 0,
+      "holdings": [
+        {
+          "ticker": "VOO",
+          "name": "Vanguard S&P 500 ETF",
+          "shares": 0,
+          "cost_basis_per_share": 0,
+          "current_price": 0,
+          "asset_class": "us_equity"
+        }
+      ]
+    }
+  ],
+  "target_allocation": {
+    "us_equity": 0.60,
+    "international_equity": 0.20,
+    "bonds": 0.15,
+    "cash": 0.05
+  },
+  "watchlist": [
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "notes": "Considering buying — reason here",
+      "target_position_value": 5000,
+      "priority": "high"
+    }
+  ],
+  "investment_horizon_years": 15,
+  "risk_tolerance": "moderate",
+  "monthly_investment_budget": 0,
+  "tax_loss_harvesting_enabled": true
+}

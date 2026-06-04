@@ -1,0 +1,22 @@
+{
+  "_comment": "529 plans and college savings per child. Copy to data/college.json.",
+  "college_cost_inflation_rate": 0.05,
+  "children": [
+    {
+      "name": "Child Name",
+      "birth_year": 2020,
+      "529_institution": "Vanguard",
+      "529_balance": 0,
+      "annual_529_contribution": 0,
+      "529_expected_annual_return": 0.065,
+      "target_school_type": "public_in_state",
+      "years_of_college": 4,
+      "notes": ""
+    }
+  ],
+  "current_annual_costs": {
+    "public_in_state": 27000,
+    "public_out_of_state": 45000,
+    "private": 58000
+  }
+}

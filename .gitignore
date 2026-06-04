@@ -1,0 +1,24 @@
+# ── Financial advisor ──────────────────────────────────────
+financial-advisor-template/data/*.json
+!financial-advisor-template/data/.gitkeep
+!financial-advisor-template/data/README.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# ── Golf trip app ──────────────────────────────────────────
+golf-trip-template/.env
+golf-trip-template/node_modules/
+golf-trip-template/.expo/
+
+# ── Common ─────────────────────────────────────────────────
+.DS_Store
+*.log
+.env
+node_modules/
