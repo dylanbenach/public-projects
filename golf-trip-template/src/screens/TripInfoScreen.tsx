@@ -5,19 +5,19 @@ import CrossedClubs from '../components/clubhouse/CrossedClubs';
 import Overline from '../components/clubhouse/Overline';
 import Card from '../components/clubhouse/Card';
 
-const TRIP_TITLE = 'Dingus Does Dewey 2026';
+const TRIP_TITLE = 'Golf Trip 2026';
 
 const TRIP_DETAILS = {
-  location: 'Dewey Beach, DE',
-  dates: 'October 15–17, 2026',
+  location: 'Your Destination',
+  dates: 'Your Dates',
   lodging: 'TBD',
-  lodgingNote: 'check-in Thursday afternoon',
+  lodgingNote: 'check-in day 1 afternoon',
 };
 
 const ROUNDS: Array<{ id: string; course: string; day: string; time: string; par?: number }> = [
-  { id: 'round1', course: 'TBD', day: 'Thursday, Oct 15',  time: 'TBD' },
-  { id: 'round2', course: 'TBD', day: 'Friday, Oct 16',    time: 'TBD' },
-  { id: 'round3', course: 'TBD', day: 'Saturday, Oct 17',  time: 'TBD' },
+  { id: 'round1', course: 'TBD', day: 'Day 1', time: 'TBD' },
+  { id: 'round2', course: 'TBD', day: 'Day 2', time: 'TBD' },
+  { id: 'round3', course: 'TBD', day: 'Day 3', time: 'TBD' },
 ];
 
 const OTHER_PLANS: Array<{ title: string; detail: string }> = [
