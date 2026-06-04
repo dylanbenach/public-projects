@@ -92,26 +92,6 @@ def _load_networth_history() -> list:
         return json.load(f)
 
 
-def _build_rsu(port: dict) -> dict:
-    rsu = port.get("rsu_program", port.get("azn_rsu_program", {}))
-    grants = rsu.get("grants", [])
-    price = rsu.get("price_per_share")
-    current_year = date.today().year
-    next_vest = rsu.get("first_vest", current_year + 3)
-    years_to_vest = max(next_vest - current_year, 0)
-    total_unvested_shares = sum(g.get("shares", 0) for g in grants if g.get("vest_year", 9999) > current_year)
-    projected_value = round(total_unvested_shares * price) if price else None
-    return {
-        "ticker": rsu.get("ticker", ""),
-        "annual_grant_value": rsu.get("annual_grant_value", 0),
-        "next_vest_year": next_vest,
-        "years_to_vest": years_to_vest,
-        "total_unvested_shares": total_unvested_shares,
-        "price": price,
-        "projected_vest_value": projected_value,
-        "grants": grants,
-    }
-
 
 # ---------------------------------------------------------------------------
 # /api/summary — full current state
@@ -324,7 +304,6 @@ def get_summary():
             if not k.startswith("_")
         },
         "networth_history": _load_networth_history(),
-        "rsu": _build_rsu(port),
         "watchlist": [w for w in port.get("watchlist", []) if not str(w.get("ticker", "")).startswith("_")],
         "portfolio_accounts": port.get("accounts", []),
     }

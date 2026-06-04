@@ -47,7 +47,7 @@ function StatCard({ label, value, sub, accent }) {
 
 
 export default function Overview({ data }) {
-  const { net_worth, cash_flow, retirement, debts, profile, spending_categories, networth_history, rsu, action_items } = data
+  const { net_worth, cash_flow, retirement, debts, profile, spending_categories, networth_history, action_items } = data
   const [saving, setSaving] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
 
@@ -208,37 +208,6 @@ export default function Overview({ data }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      )}
-
-      {/* RSU tracker */}
-      {rsu && (
-        <div className="bg-gray-800/70 rounded-xl p-5 border border-gray-700/60">
-          <h3 className="text-sm font-semibold text-white mb-3">{rsu.ticker ? `${rsu.ticker} ` : ''}RSU Tracker</h3>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <p className="text-gray-400">Next vest</p>
-              <p className="text-white font-medium">{rsu.next_vest_year} ({rsu.years_to_vest}y away)</p>
-            </div>
-            <div>
-              <p className="text-gray-400">Unvested shares</p>
-              <p className="text-white font-medium">{rsu.total_unvested_shares.toLocaleString()} shares</p>
-            </div>
-            <div>
-              <p className="text-gray-400">Grant value/yr</p>
-              <p className="text-white font-medium">${rsu.annual_grant_value.toLocaleString()}</p>
-            </div>
-          </div>
-          {rsu.price ? (
-            <p className="text-green-400 text-sm mt-3">
-              Projected vest value: {fmt(rsu.projected_vest_value)} at ${rsu.price}/share
-            </p>
-          ) : (
-            <p className="text-gray-500 text-xs mt-3">
-              Set <code className="bg-gray-700 px-1 rounded">price_per_share</code> in data/portfolio.json to see projected vest value
-            </p>
-          )}
-          <p className="text-gray-500 text-xs mt-1">Taxed as ordinary income at vest — consider selling promptly to avoid single-stock concentration risk</p>
         </div>
       )}
 

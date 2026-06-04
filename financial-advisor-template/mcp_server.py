@@ -216,11 +216,11 @@ def get_college_gap() -> str:
             lines.append(f"  Today's cost: {_fmt0(hs.get('annual_cost_today', 20000))}/yr")
             lines.append(f"  Projected 2039 cost: {_fmt0(hs.get('projected_annual_cost_at_start', 37713))}/yr (~{_fmt0(hs.get('projected_annual_cost_at_start', 37713)/12)}/mo)")
             lines.append(f"  4-year total: {_fmt0(hs.get('projected_4yr_total', 162548))}")
-            lines.append(f"  Funded from: cash flow / RSU vests (529 covers up to $10k/yr for K-12)\n")
+            lines.append(f"  Funded from: cash flow (529 covers up to $10k/yr for K-12)\n")
 
         total = r['projected_total_college_cost'] + hs.get('projected_4yr_total', 0)
         lines.append(f"**Total education cost (high school + college): {_fmt0(total)}**")
-        lines.append(f"Consider RSU vests, bonuses, or increased contributions to close any funding gap.")
+        lines.append(f"Consider bonuses, windfalls, or increased contributions to close any funding gap.")
         results.append("\n".join(lines))
 
     return "\n\n".join(results) if results else "No children found in college.json"

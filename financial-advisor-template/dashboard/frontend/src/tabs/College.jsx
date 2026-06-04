@@ -33,7 +33,7 @@ function Slider({ label, value, min, max, step, format, onChange }) {
 export default function College({ data }) {
   const { college } = data
 
-  const [annualContrib, setAnnualContrib] = useState(college.annual_contribution || 5500)
+  const [annualContrib, setAnnualContrib] = useState(college.annual_contribution ?? 0)
   const [schoolType, setSchoolType] = useState(college.school_type || 'private')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
