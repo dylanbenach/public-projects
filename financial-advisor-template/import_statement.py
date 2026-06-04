@@ -46,7 +46,7 @@ def _parse_date(s: str) -> str:
 
 
 def _clean_employer(raw: str) -> str:
-    """'EVINOVA US LLC' → 'Evinova'"""
+    """'ACME CORP LLC' → 'Acme Corp'"""
     stop = {"LLC", "INC", "CORP", "LTD", "US", "USA", "CO", "THE"}
     words = [w.title() for w in raw.split() if w.upper() not in stop]
     return " ".join(words) if words else raw.title()
@@ -406,7 +406,8 @@ class FidelityNetBenefitsParser:
         result = {"statement_summary": {"institution": "Fidelity", "account_type": "401k"}}
 
         # Plan name — first bold heading after "Statement Details"
-        m = re.search(r'Statement Details\s+(.+?)\s+DYLAN', text, re.IGNORECASE)
+        # Capture plan name between "Statement Details" and the trailing all-caps account holder name
+        m = re.search(r'Statement Details\s+(.+?)\s+(?:[A-Z]{2,}\s*)+$', text, re.MULTILINE)
         plan_name = m.group(1).strip() if m else "Workplace 401(k)"
         result["statement_summary"]["plan_name"] = plan_name
 
@@ -444,7 +445,7 @@ class FidelityNetBenefitsParser:
 
         # Employer name from plan name
         employer = "Unknown"
-        for name in ("IBM", "AstraZeneca", "Microsoft", "Google", "Amazon", "Apple"):
+        for name in ("IBM", "Microsoft", "Google", "Amazon", "Apple", "Meta", "Pfizer", "Johnson & Johnson"):
             if name.lower() in plan_name.lower() or name.lower() in text_lower:
                 employer = name
                 break
@@ -724,7 +725,7 @@ class Form1098Parser:
         lender = "Mortgage Lender"
         for line in text.strip().splitlines()[:15]:
             line = line.strip()
-            if len(line) > 5 and not re.match(r'^[\d\s\W]+$', line) and "DYLAN" not in line.upper():
+            if len(line) > 5 and not re.match(r'^[\d\s\W]+$', line):
                 lender = line
                 break
         # Prefer explicit lender fields

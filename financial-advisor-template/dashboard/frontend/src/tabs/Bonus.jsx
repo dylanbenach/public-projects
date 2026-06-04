@@ -2,10 +2,10 @@ import { useState, useMemo } from 'react'
 
 const fmt = (n) => n >= 1e6 ? `$${(n / 1e6).toFixed(2)}M` : `$${Math.round(n).toLocaleString()}`
 
-// Federal supplemental + MD state
+// Federal supplemental withholding rate (fixed at 22%) + state (update for your state)
 const FEDERAL_SUPP = 0.22
-const MD_STATE = 0.0833
-const TOTAL_TAX_RATE = FEDERAL_SUPP + MD_STATE
+const STATE_RATE = 0.05
+const TOTAL_TAX_RATE = FEDERAL_SUPP + STATE_RATE
 
 function monthsToPayoff(balance, annualRate, payment) {
   const r = annualRate / 12
@@ -70,7 +70,7 @@ export default function Bonus({ data }) {
 
   const allocs = [
     { label: 'HELOC Paydown', pct: helocPct, set: setHelocPct, color: '#f97316', amount: helocAlloc },
-    { label: "Quinn's 529",   pct: collegePct, set: setCollegePct, color: '#22c55e', amount: collegeAlloc },
+    { label: `${college?.child_name || 'Child'}'s 529`,   pct: collegePct, set: setCollegePct, color: '#22c55e', amount: collegeAlloc },
     { label: 'Savings',       pct: savingsPct, set: setSavingsPct, color: '#3b82f6', amount: savingsAlloc },
   ]
 
@@ -99,8 +99,8 @@ export default function Bonus({ data }) {
             <span className="text-red-400">−${Math.round(grossBonus * FEDERAL_SUPP).toLocaleString()}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-400">MD state + county (8.33%)</span>
-            <span className="text-red-400">−${Math.round(grossBonus * MD_STATE).toLocaleString()}</span>
+            <span className="text-gray-400">State tax ({(STATE_RATE * 100).toFixed(1)}%)</span>
+            <span className="text-red-400">−${Math.round(grossBonus * STATE_RATE).toLocaleString()}</span>
           </div>
           <div className="flex justify-between border-t border-gray-700 pt-2 font-medium">
             <span className="text-white">Net bonus</span>
@@ -156,7 +156,7 @@ export default function Bonus({ data }) {
         {college && (
           <>
             <ImpactRow
-              label="Quinn's 529 gap"
+              label={`${college?.child_name || 'Child'}'s 529 gap`}
               before={fmt(currentGap)}
               after={fmt(newGap)}
               good={true}
