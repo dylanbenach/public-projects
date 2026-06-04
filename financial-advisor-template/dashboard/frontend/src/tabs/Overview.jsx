@@ -110,7 +110,7 @@ export default function Overview({ data }) {
         <StatCard
           label="Monthly Surplus"
           value={`$${cash_flow.monthly_surplus.toLocaleString()}`}
-          sub={`$${cash_flow.monthly_income.toLocaleString()} in · $${(cash_flow.monthly_expenses + cash_flow.monthly_childcare).toLocaleString()} out (incl. childcare)`}
+          sub={`$${cash_flow.monthly_income.toLocaleString()} in · $${(cash_flow.monthly_expenses + cash_flow.monthly_childcare).toLocaleString()} out${cash_flow.monthly_childcare > 0 ? ' (incl. childcare)' : ''}`}
           accent="text-green-400"
         />
         <StatCard

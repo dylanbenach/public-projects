@@ -242,13 +242,13 @@ def get_summary():
             },
         },
         "cash_flow": {
-            "monthly_income": p.get("monthly_take_home", 16400),
-            "monthly_expenses": p.get("monthly_expenses", 10900),
-            "monthly_childcare": p.get("monthly_childcare", 2400),
+            "monthly_income": p.get("monthly_take_home", 0),
+            "monthly_expenses": p.get("monthly_expenses", 0),
+            "monthly_childcare": p.get("monthly_childcare", 0),
             "monthly_surplus": (
-                p.get("monthly_take_home", 16400)
-                - p.get("monthly_expenses", 10900)
-                - p.get("monthly_childcare", 2400)
+                p.get("monthly_take_home", 0)
+                - p.get("monthly_expenses", 0)
+                - p.get("monthly_childcare", 0)
             ),
         },
         "retirement": {
