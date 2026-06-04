@@ -87,14 +87,11 @@ def get_net_worth() -> str:
         assets[label] = acct.get("balance", 0)
 
     # Real estate
-    for prop in re.get("properties", []):
-        assets[prop.get("nickname", "Property")] = prop.get("current_estimated_value", 0)
-        mtg = prop.get("mortgage", {})
-        if mtg.get("current_balance"):
-            liabilities[f"Mortgage ({mtg.get('lender','')})"] = mtg["current_balance"]
-        heloc = prop.get("heloc", {})
-        if heloc.get("balance_jan1_2025"):
-            liabilities[f"HELOC ({heloc.get('lender','')})"] = heloc["balance_jan1_2025"]
+    if re.get("current_estimated_value"):
+        assets[re.get("nickname", "Primary Home")] = re.get("current_estimated_value", 0)
+    mtg = re.get("mortgage", {})
+    if mtg.get("current_balance"):
+        liabilities[f"Mortgage ({mtg.get('lender', '')})"] = mtg["current_balance"]
 
     # 529
     for child in c.get("children", []):
@@ -234,38 +231,25 @@ def get_real_estate_summary() -> str:
     """Return equity, LTV, mortgage balance, and HELOC details for all properties."""
     re = _load("real_estate")
 
+    val = re.get("current_estimated_value", 0)
+    mtg = re.get("mortgage", {})
+    mtg_bal = mtg.get("current_balance", 0)
+    equity = val - mtg_bal
+    eq = equity_and_ltv(val, mtg_bal)
+
     lines = ["## Real Estate Summary\n"]
-    for prop in re.get("properties", []):
-        val = prop.get("current_estimated_value", 0)
-        mtg = prop.get("mortgage", {})
-        heloc = prop.get("heloc", {})
-
-        mtg_bal = mtg.get("current_balance", 0)
-        heloc_bal = heloc.get("balance_jan1_2025", 0)
-        total_debt = mtg_bal + heloc_bal
-        equity = val - total_debt
-
-        eq = equity_and_ltv(val, total_debt)
-
-        lines.append(f"**{prop.get('nickname', 'Property')}** — {prop.get('address', '')}")
-        lines.append(f"  Estimated value:     {_fmt0(val)}")
-        lines.append(f"  Equity:              {_fmt0(equity)} ({eq['equity_pct']}%)")
-        lines.append(f"  Combined LTV:        {eq['ltv_pct']}%\n")
-        lines.append(f"  First mortgage ({mtg.get('lender', '')}):")
-        lines.append(f"    Balance: {_fmt0(mtg_bal)} @ {mtg.get('interest_rate', 0)*100:.1f}% fixed")
-        lines.append(f"    Monthly payment (PITI): {_fmt0(mtg.get('monthly_payment', 0))}/mo")
-        lines.append(f"    Origination: {mtg.get('start_date', '')}\n")
-        if heloc:
-            lines.append(f"  HELOC ({heloc.get('lender', '')}) — ⚠️ Highest-cost debt:")
-            lines.append(f"    Balance: ~{_fmt0(heloc_bal)} @ {heloc.get('interest_rate', 0.08)*100:.0f}% variable")
-            lines.append(f"    Monthly payment: {_fmt0(heloc.get('monthly_payment', 0))}/mo")
-            lines.append(f"    Annual interest cost: ~{_fmt0(heloc_bal * heloc.get('interest_rate', 0.08))}")
-            lines.append(f"    Priority: pay down aggressively — beats expected market return")
-
-        if prop.get("annual_property_tax"):
-            lines.append(f"\n  Annual property tax: {_fmt0(prop['annual_property_tax'])}")
-        if prop.get("annual_insurance"):
-            lines.append(f"  Annual insurance: {_fmt0(prop['annual_insurance'])}")
+    lines.append(f"**{re.get('nickname', 'Primary Home')}** — {re.get('address', '')}")
+    lines.append(f"  Estimated value:     {_fmt0(val)}")
+    lines.append(f"  Equity:              {_fmt0(equity)} ({eq['equity_pct']}%)")
+    lines.append(f"  LTV:                 {eq['ltv_pct']}%\n")
+    lines.append(f"  Mortgage ({mtg.get('lender', '')}):")
+    lines.append(f"    Balance: {_fmt0(mtg_bal)} @ {mtg.get('interest_rate', 0)*100:.1f}% {mtg.get('type', 'fixed')}")
+    lines.append(f"    Monthly payment (PITI): {_fmt0(mtg.get('monthly_payment', 0))}/mo")
+    lines.append(f"    Origination: {mtg.get('start_date', '')}\n")
+    if re.get("annual_property_tax"):
+        lines.append(f"  Annual property tax: {_fmt0(re['annual_property_tax'])}")
+    if re.get("annual_insurance"):
+        lines.append(f"  Annual insurance: {_fmt0(re['annual_insurance'])}")
 
     return "\n".join(lines)
 

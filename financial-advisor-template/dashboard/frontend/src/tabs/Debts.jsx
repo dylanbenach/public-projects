@@ -68,25 +68,22 @@ export default function Debts({ data }) {
   const { debts } = data
 
   const mortgage = useMemo(() => amortize(debts.mortgage.balance, debts.mortgage.rate, debts.mortgage.monthly_payment, 400), [debts])
-  const heloc    = useMemo(() => amortize(debts.heloc.balance,    debts.heloc.rate,    debts.heloc.monthly_payment,    240), [debts])
   const car      = useMemo(() => amortize(debts.car.balance,      debts.car.rate,      debts.car.monthly_payment,       84), [debts])
 
   const mortgageMonths = useMemo(() => monthsToPayoff(debts.mortgage.balance, debts.mortgage.rate, debts.mortgage.monthly_payment), [debts])
-  const helocMonths    = useMemo(() => monthsToPayoff(debts.heloc.balance,    debts.heloc.rate,    debts.heloc.monthly_payment),    [debts])
   const carMonths      = useMemo(() => monthsToPayoff(debts.car.balance,      debts.car.rate,      debts.car.monthly_payment),      [debts])
 
-  const totalDebt = debts.mortgage.balance + debts.heloc.balance + debts.car.balance
-  const totalMonthly = debts.mortgage.monthly_payment + debts.heloc.monthly_payment + debts.car.monthly_payment
-  const totalInterest = mortgage.totalInterest + heloc.totalInterest + car.totalInterest
+  const totalDebt = debts.mortgage.balance + debts.car.balance
+  const totalMonthly = debts.mortgage.monthly_payment + debts.car.monthly_payment
+  const totalInterest = mortgage.totalInterest + car.totalInterest
 
   // Normalise curves to years for the combined chart
   const maxYears = 15
   const combined = Array.from({ length: maxYears * 12 + 1 }, (_, mo) => ({
     month: mo,
     mortgage: mortgage.points[mo]?.balance ?? 0,
-    heloc: heloc.points[mo]?.balance ?? 0,
     car: car.points[mo]?.balance ?? 0,
-  })).filter((_, i) => i % 12 === 0) // annual points only
+  })).filter((_, i) => i % 12 === 0)
     .map(d => ({ ...d, year: Math.floor(d.month / 12) }))
 
   return (
@@ -108,24 +105,15 @@ export default function Debts({ data }) {
       </div>
 
       {/* Debt cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <DebtCard
-          label="First Mortgage"
+          label={debts.mortgage.lender ? `Mortgage (${debts.mortgage.lender})` : 'Mortgage'}
           balance={debts.mortgage.balance}
           rate={debts.mortgage.rate}
           payment={debts.mortgage.monthly_payment}
           months={mortgageMonths}
           totalInterest={mortgage.totalInterest}
           color="#ef4444"
-        />
-        <DebtCard
-          label="Tower FCU HELOC"
-          balance={debts.heloc.balance}
-          rate={debts.heloc.rate}
-          payment={debts.heloc.monthly_payment}
-          months={helocMonths}
-          totalInterest={heloc.totalInterest}
-          color="#f97316"
         />
         <DebtCard
           label="Car Loan"
@@ -141,21 +129,20 @@ export default function Debts({ data }) {
       {/* Combined paydown chart */}
       <div className="bg-gray-800/70 rounded-xl p-5 border border-gray-700/60">
         <h3 className="text-sm font-semibold text-white mb-1">All Debts — Paydown Over Time</h3>
-        <p className="text-gray-500 text-xs mb-4">Car pays off ~{payoffDate(carMonths)} · HELOC ~{payoffDate(helocMonths)} · Mortgage ~{payoffDate(mortgageMonths)}</p>
+        <p className="text-gray-500 text-xs mb-4">Car pays off ~{payoffDate(carMonths)} · Mortgage ~{payoffDate(mortgageMonths)}</p>
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={combined}>
             <XAxis dataKey="year" tickFormatter={y => `yr ${y}`} tick={{ fill: '#9ca3af', fontSize: 11 }} />
             <YAxis tickFormatter={fmtK} tick={{ fill: '#9ca3af', fontSize: 11 }} />
             <Tooltip
-              formatter={(v, name) => [fmt(v), { mortgage: 'Mortgage', heloc: 'HELOC', car: 'Car' }[name]]}
+              formatter={(v, name) => [fmt(v), { mortgage: 'Mortgage', car: 'Car' }[name]]}
               labelFormatter={y => `Year ${y}`}
               contentStyle={{ background: '#1f2937', border: 'none', borderRadius: 8 }}
               labelStyle={{ color: '#f9fafb' }}
               itemStyle={{ color: '#f9fafb' }}
             />
-            <Legend formatter={n => ({ mortgage: 'Mortgage', heloc: 'HELOC', car: 'Car' }[n])} wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
+            <Legend formatter={n => ({ mortgage: 'Mortgage', car: 'Car' }[n])} wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
             <Line type="monotone" dataKey="mortgage" stroke="#ef4444" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="heloc"    stroke="#f97316" strokeWidth={2} dot={false} />
             <Line type="monotone" dataKey="car"      stroke="#eab308" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
@@ -166,10 +153,10 @@ export default function Debts({ data }) {
         <h3 className="text-sm font-semibold text-white">Key Insight</h3>
         <p className="text-gray-400">
           The car pays off in <span className="text-white">{carMonths ? `${Math.floor(carMonths/12)}y ${carMonths%12}mo` : '—'}</span>, freeing up <span className="text-green-400">${Math.round(debts.car.monthly_payment).toLocaleString()}/mo</span>.
-          Redirect that to the HELOC and payoff moves to <span className="text-white">{(() => { const m = monthsToPayoff(debts.heloc.balance, debts.heloc.rate, debts.heloc.monthly_payment + debts.car.monthly_payment); return m ? `${Math.floor(m/12)}y ${m%12}mo` : '—' })()}</span> after the car is gone.
+          Redirect that payment to your mortgage principal to pay it off faster and save significantly on interest.
         </p>
         <p className="text-gray-400">
-          Mortgage at <span className="text-green-400">3.5% fixed</span> — do not refinance or pay down early. That rate is irreplaceable.
+          Mortgage at <span className="text-green-400">{(debts.mortgage.rate * 100).toFixed(1)}% fixed</span> — consider whether extra principal payments beat your expected investment returns before paying down early.
         </p>
       </div>
     </div>

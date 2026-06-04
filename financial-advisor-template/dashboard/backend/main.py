@@ -133,13 +133,9 @@ def get_summary():
     all_ret = r.get("accounts", []) + r.get("spouse_accounts", [])
     retirement_total = sum(x.get("balance", 0) for x in all_ret)
 
-    home_value = 0
-    mortgage_balance = 0
-    heloc_balance = 0
-    for prop in re.get("properties", []):
-        home_value += prop.get("current_estimated_value", 0)
-        mortgage_balance += prop.get("mortgage", {}).get("current_balance", 0)
-        heloc_balance += prop.get("heloc", {}).get("balance_jan1_2025", 0)
+    home_value = re.get("current_estimated_value", 0)
+    mtg = re.get("mortgage", {})
+    mortgage_balance = mtg.get("current_balance", 0)
 
     college_balance = sum(ch.get("529_balance", 0) for ch in c.get("children", []))
     brokerage = sum(acct.get("total_value", 0) for acct in port.get("accounts", []))
@@ -152,7 +148,7 @@ def get_summary():
     )
 
     total_assets = checking + savings + retirement_total + home_value + college_balance + brokerage
-    total_liabilities = mortgage_balance + heloc_balance + car_loan + cc_debt
+    total_liabilities = mortgage_balance + car_loan + cc_debt
     net_worth = total_assets - total_liabilities
 
     # ── Retirement projection (current settings) ───────────────────
@@ -239,11 +235,6 @@ def get_summary():
         }
 
     # ── Debts ──────────────────────────────────────────────────────
-    prop = re.get("properties", [{}])[0]
-    mtg = prop.get("mortgage", {})
-    heloc = prop.get("heloc", {})
-
-    months_paid = months_since(mtg.get("start_date", ""))
     amort = mortgage_amortization(
         principal=mtg.get("current_balance", 0),
         annual_rate=mtg.get("interest_rate", 0.065),
@@ -251,22 +242,9 @@ def get_summary():
         months_paid=0,  # already current balance
     )
     eq = equity_and_ltv(
-        current_value=prop.get("current_estimated_value", 0),
-        mortgage_balance=mortgage_balance + heloc_balance,
+        current_value=home_value,
+        mortgage_balance=mortgage_balance,
     )
-
-    # HELOC paydown projection
-    heloc_curve = []
-    bal = heloc_balance
-    rate = heloc.get("interest_rate", 0.08)
-    pmt = heloc.get("monthly_payment", 900)
-    for mo in range(0, 121):  # 10 years
-        heloc_curve.append({"month": mo, "balance": round(max(bal, 0))})
-        if bal <= 0:
-            break
-        interest = bal * rate / 12
-        principal = pmt - interest
-        bal -= principal
 
     return {
         "net_worth": {
@@ -280,7 +258,6 @@ def get_summary():
             },
             "liabilities": {
                 "mortgage": mortgage_balance,
-                "heloc": heloc_balance,
                 "car_loan": car_loan,
             },
         },
@@ -318,18 +295,10 @@ def get_summary():
         "debts": {
             "mortgage": {
                 "balance": mortgage_balance,
-                "rate": mtg.get("interest_rate", 0.035),
+                "rate": mtg.get("interest_rate", 0.065),
                 "monthly_payment": mtg.get("monthly_payment", 0),
                 "lender": mtg.get("lender", ""),
                 "payoff_years": amort["payoff_years_remaining"],
-            },
-            "heloc": {
-                "balance": heloc_balance,
-                "rate": heloc.get("interest_rate", 0.08),
-                "monthly_payment": heloc.get("monthly_payment", 900),
-                "lender": heloc.get("lender", ""),
-                "annual_interest": round(heloc_balance * heloc.get("interest_rate", 0.08)),
-                "curve": heloc_curve,
             },
             "car": {
                 "balance": car_loan,

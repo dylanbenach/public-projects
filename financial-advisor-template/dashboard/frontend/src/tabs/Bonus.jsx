@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 
 const fmt = (n) => n >= 1e6 ? `$${(n / 1e6).toFixed(2)}M` : `$${Math.round(n).toLocaleString()}`
 
@@ -6,23 +6,6 @@ const fmt = (n) => n >= 1e6 ? `$${(n / 1e6).toFixed(2)}M` : `$${Math.round(n).to
 const FEDERAL_SUPP = 0.22
 const STATE_RATE = 0.05
 const TOTAL_TAX_RATE = FEDERAL_SUPP + STATE_RATE
-
-function monthsToPayoff(balance, annualRate, payment) {
-  const r = annualRate / 12
-  let bal = balance
-  for (let mo = 1; mo <= 1200; mo++) {
-    bal -= Math.max(payment - bal * r, 0)
-    if (bal <= 0) return mo
-  }
-  return null
-}
-
-function payoffDate(months) {
-  if (!months) return 'Very long'
-  const d = new Date()
-  d.setMonth(d.getMonth() + months)
-  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-}
 
 function ImpactRow({ label, before, after, good }) {
   return (
@@ -38,40 +21,27 @@ function ImpactRow({ label, before, after, good }) {
 }
 
 export default function Bonus({ data }) {
-  const { debts, college } = data
+  const { college } = data
 
   const [grossBonus, setGrossBonus] = useState(40000)
-  const [helocPct, setHelocPct] = useState(60)
   const [collegePct, setCollegePct] = useState(20)
-  const [savingsPct, setSavingsPct] = useState(10)
+  const [savingsPct, setSavingsPct] = useState(50)
 
-  const flexPct = Math.max(0, 100 - helocPct - collegePct - savingsPct)
+  const flexPct = Math.max(0, 100 - collegePct - savingsPct)
 
   const netBonus = Math.round(grossBonus * (1 - TOTAL_TAX_RATE))
-  const taxWithheld = grossBonus - netBonus
 
-  const helocAlloc   = Math.round(netBonus * helocPct / 100)
   const collegeAlloc = Math.round(netBonus * collegePct / 100)
   const savingsAlloc = Math.round(netBonus * savingsPct / 100)
   const flexAlloc    = Math.round(netBonus * flexPct / 100)
-
-  // HELOC impact
-  const helocBal = debts.heloc.balance
-  const helocRate = debts.heloc.rate
-  const helocPmt = debts.heloc.monthly_payment
-  const baseHelocMonths = useMemo(() => monthsToPayoff(helocBal, helocRate, helocPmt), [helocBal, helocRate, helocPmt])
-  const newHelocMonths  = useMemo(() => monthsToPayoff(Math.max(helocBal - helocAlloc, 0), helocRate, helocPmt), [helocBal, helocAlloc, helocRate, helocPmt])
 
   // 529 impact
   const currentGap = college?.funding_gap ?? 0
   const newGap = Math.max(currentGap - collegeAlloc, 0)
 
-  const fmtMonths = (m) => m ? `${Math.floor(m/12)}y ${m%12}mo` : '—'
-
   const allocs = [
-    { label: 'HELOC Paydown', pct: helocPct, set: setHelocPct, color: '#f97316', amount: helocAlloc },
-    { label: `${college?.child_name || 'Child'}'s 529`,   pct: collegePct, set: setCollegePct, color: '#22c55e', amount: collegeAlloc },
-    { label: 'Savings',       pct: savingsPct, set: setSavingsPct, color: '#3b82f6', amount: savingsAlloc },
+    { label: `${college?.child_name || 'Child'}'s 529`, pct: collegePct, set: setCollegePct, color: '#22c55e', amount: collegeAlloc },
+    { label: 'Savings',                                   pct: savingsPct, set: setSavingsPct, color: '#3b82f6', amount: savingsAlloc },
   ]
 
   return (
@@ -133,7 +103,7 @@ export default function Bonus({ data }) {
           <span className="text-gray-300">{flexPct}% — ${flexAlloc.toLocaleString()}</span>
         </div>
 
-        {helocPct + collegePct + savingsPct > 100 && (
+        {collegePct + savingsPct > 100 && (
           <p className="text-red-400 text-xs">Allocations exceed 100% — reduce one slider</p>
         )}
       </div>
@@ -141,18 +111,6 @@ export default function Bonus({ data }) {
       {/* Impact */}
       <div className="bg-gray-800/70 rounded-xl p-5 border border-gray-700/60">
         <h3 className="text-sm font-semibold text-white mb-3">Impact</h3>
-        <ImpactRow
-          label="HELOC payoff"
-          before={fmtMonths(baseHelocMonths)}
-          after={fmtMonths(newHelocMonths)}
-          good={true}
-        />
-        <ImpactRow
-          label="HELOC balance after"
-          before={fmt(helocBal)}
-          after={fmt(Math.max(helocBal - helocAlloc, 0))}
-          good={true}
-        />
         {college && (
           <>
             <ImpactRow
@@ -179,8 +137,8 @@ export default function Bonus({ data }) {
 
       {/* Suggested split note */}
       <div className="bg-gray-800/70 rounded-xl p-4 text-xs text-gray-400 border border-gray-700/60">
-        <span className="text-gray-300 font-medium">Suggested split: </span>
-        60% HELOC · 20% 529 · 10% savings · 10% flex — eliminates HELOC years faster while closing the 529 gap.
+        <span className="text-gray-300 font-medium">Tip: </span>
+        Consider splitting your bonus between 529 contributions, savings, and paying down any high-interest debt. Adjust the sliders above to see the impact.
       </div>
     </div>
   )

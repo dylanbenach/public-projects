@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
-  LineChart, Line, Legend, AreaChart, Area,
+  AreaChart, Area,
 } from 'recharts'
 import { saveNetworthSnapshot } from '../api'
 
@@ -17,7 +17,6 @@ const fmtK = (n) => n >= 1e6
 // Unknown keys will fall back to the key name itself with a default color.
 const SPEND_COLORS = {
   mortgage:     '#6366f1',
-  heloc:        '#f97316',
   food:         '#3b82f6',
   transport:    '#22c55e',
   childcare:    '#ec4899',
@@ -28,7 +27,6 @@ const SPEND_COLORS = {
 
 const SPEND_LABELS = {
   mortgage:     'Mortgage',
-  heloc:        'HELOC',
   food:         'Food & Dining',
   transport:    'Transport',
   childcare:    'Childcare',
@@ -47,31 +45,9 @@ function StatCard({ label, value, sub, accent }) {
   )
 }
 
-function helocCurve(balance, rate, payment, lumpSum = 0) {
-  const r = rate / 12
-  let bal = Math.max(balance - lumpSum, 0)
-  const pts = []
-  for (let mo = 0; mo <= 120; mo++) {
-    pts.push({ month: mo, balance: Math.round(Math.max(bal, 0)) })
-    if (bal <= 0) break
-    bal -= Math.max(payment - bal * r, 0)
-  }
-  return pts
-}
-
-function monthsToPayoff(balance, rate, payment, lumpSum = 0) {
-  const r = rate / 12
-  let bal = Math.max(balance - lumpSum, 0)
-  for (let mo = 1; mo <= 1200; mo++) {
-    bal -= Math.max(payment - bal * r, 0)
-    if (bal <= 0) return mo
-  }
-  return null
-}
 
 export default function Overview({ data }) {
   const { net_worth, cash_flow, retirement, debts, profile, spending_categories, networth_history, rsu, action_items } = data
-  const [lumpSum, setLumpSum] = useState(40000)
   const [saving, setSaving] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
 
@@ -84,7 +60,6 @@ export default function Overview({ data }) {
 
   const liabData = [
     { name: 'Mortgage', value: debts.mortgage.balance, color: '#ef4444' },
-    { name: 'HELOC',    value: debts.heloc.balance,    color: '#f97316' },
     { name: 'Car',      value: debts.car.balance,      color: '#eab308' },
   ].filter(d => d.value > 0)
 
@@ -92,21 +67,6 @@ export default function Overview({ data }) {
   const spendData = Object.entries(spending_categories || {})
     .map(([k, v]) => ({ name: SPEND_LABELS[k] || k, value: v, color: SPEND_COLORS[k] || '#6b7280' }))
     .sort((a, b) => b.value - a.value)
-
-  // HELOC curves
-  const { balance, rate, monthly_payment: payment } = debts.heloc
-  const baseCurve = useMemo(() => helocCurve(balance, rate, payment, 0), [balance, rate, payment])
-  const lumpCurve = useMemo(() => helocCurve(balance, rate, payment, lumpSum), [balance, rate, payment, lumpSum])
-  const baseMonths = useMemo(() => monthsToPayoff(balance, rate, payment, 0), [balance, rate, payment])
-  const lumpMonths = useMemo(() => monthsToPayoff(balance, rate, payment, lumpSum), [balance, rate, payment, lumpSum])
-  const monthsSaved = baseMonths && lumpMonths ? baseMonths - lumpMonths : null
-
-  const maxLen = Math.max(baseCurve.length, lumpCurve.length)
-  const helocChartData = Array.from({ length: maxLen }, (_, i) => ({
-    month: i,
-    base: baseCurve[i]?.balance ?? 0,
-    lump: lumpCurve[i]?.balance ?? 0,
-  }))
 
   // Net worth history
   const nwHistory = (networth_history || []).map(e => ({
@@ -165,10 +125,9 @@ export default function Overview({ data }) {
           sub={`${debts.home_equity_pct}% equity · ${debts.ltv}% LTV`}
         />
         <StatCard
-          label="HELOC Balance"
-          value={fmt(debts.heloc.balance)}
-          sub={`8% variable · $${debts.heloc.annual_interest.toLocaleString()}/yr interest`}
-          accent="text-orange-400"
+          label="Mortgage Balance"
+          value={fmt(debts.mortgage.balance)}
+          sub={`${(debts.mortgage.rate * 100).toFixed(1)}% · ${debts.mortgage.lender || 'See Debts tab'}`}
         />
       </div>
 
@@ -282,52 +241,6 @@ export default function Overview({ data }) {
           <p className="text-gray-500 text-xs mt-1">Taxed as ordinary income at vest — consider selling promptly to avoid single-stock concentration risk</p>
         </div>
       )}
-
-      {/* HELOC paydown */}
-      <div className="bg-gray-800/70 rounded-xl p-5 border border-gray-700/60">
-        <div className="flex items-start justify-between mb-1">
-          <h3 className="text-sm font-semibold text-white">HELOC Paydown</h3>
-          {monthsSaved !== null && (
-            <span className="text-green-400 text-xs font-medium">
-              Saves {Math.floor(monthsSaved / 12)}y {monthsSaved % 12}mo
-            </span>
-          )}
-        </div>
-        <p className="text-gray-500 text-xs mb-4">
-          At ${payment.toLocaleString()}/mo: payoff in {baseMonths ? `${Math.floor(baseMonths/12)}y ${baseMonths%12}mo` : '—'} ·
-          With lump sum: {lumpMonths ? `${Math.floor(lumpMonths/12)}y ${lumpMonths%12}mo` : '—'}
-        </p>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={helocChartData}>
-            <XAxis dataKey="month" tickFormatter={m => `${Math.floor(m/12)}y`} tick={{ fill: '#9ca3af', fontSize: 11 }} />
-            <YAxis tickFormatter={fmtK} tick={{ fill: '#9ca3af', fontSize: 11 }} />
-            <Tooltip
-              formatter={(v, name) => [fmt(v), name === 'base' ? 'Current pace' : `With $${lumpSum.toLocaleString()} lump sum`]}
-              labelFormatter={m => `Month ${m}`}
-              contentStyle={{ background: '#1f2937', border: 'none', borderRadius: 8 }}
-              labelStyle={{ color: '#f9fafb' }}
-              itemStyle={{ color: '#f9fafb' }}
-            />
-            <Legend formatter={n => n === 'base' ? 'Current pace' : `With $${lumpSum.toLocaleString()} lump sum`} wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
-            <Line type="monotone" dataKey="base" stroke="#f97316" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="lump" stroke="#22c55e" strokeWidth={2} dot={false} strokeDasharray="5 3" />
-          </LineChart>
-        </ResponsiveContainer>
-        <div className="mt-4">
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-400">Bonus lump sum payment</span>
-            <span className="text-white font-medium">${lumpSum.toLocaleString()}</span>
-          </div>
-          <input
-            type="range" min={0} max={80000} step={1000} value={lumpSum}
-            onChange={e => setLumpSum(Number(e.target.value))}
-            className="w-full accent-green-500"
-          />
-          <div className="flex justify-between text-xs text-gray-600 mt-0.5">
-            <span>$0</span><span>$80k</span>
-          </div>
-        </div>
-      </div>
 
       {/* Action items */}
       <div className="bg-gray-800/70 rounded-xl p-5 border border-gray-700/60">
